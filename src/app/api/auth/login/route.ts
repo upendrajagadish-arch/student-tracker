@@ -34,11 +34,19 @@ export async function POST(request: Request) {
         select: { role: true },
       });
 
-      await logAudit({
-        actorRole: existingUser?.role ?? null,
-        action: "LOGIN_FAILED",
-        description: `Failed login attempt for ${email}`,
-      });
+      try {
+        await logAudit({
+          actorRole: existingUser?.role ?? null,
+          action: "LOGIN_FAILED",
+          description: `Failed login attempt for ${email}`,
+        });
+      } catch (auditError) {
+        logger.warn("Login audit log failed", {
+          action: "login",
+          route: "/api/auth/login",
+          cause: auditError,
+        });
+      }
 
       logger.warn("Login failed", { action: "login", route: "/api/auth/login" });
 
@@ -51,14 +59,23 @@ export async function POST(request: Request) {
 
     await createSession(user.id);
 
-    await logAudit({
-      actorUserId: user.id,
-      actorRole: user.role,
-      action: "LOGIN_SUCCESS",
-      entityType: "User",
-      entityId: user.id,
-      description: `${user.name} signed in`,
-    });
+    try {
+      await logAudit({
+        actorUserId: user.id,
+        actorRole: user.role,
+        action: "LOGIN_SUCCESS",
+        entityType: "User",
+        entityId: user.id,
+        description: `${user.name} signed in`,
+      });
+    } catch (auditError) {
+      logger.warn("Login audit log failed", {
+        action: "login",
+        route: "/api/auth/login",
+        userId: user.id,
+        cause: auditError,
+      });
+    }
 
     logger.info("Login success", {
       action: "login",

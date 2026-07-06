@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getStorageProvider } from "@/lib/storage";
 import {
   DEFAULT_INSTITUTION_NAME,
   DEFAULT_PLACEMENT_CELL_NAME,
@@ -119,10 +120,24 @@ export function getDefaultPublicBrandingSettings(): PublicBrandingSettings {
   };
 }
 
+async function resolveLogoPublicUrl(
+  institutionLogoPath: string | null
+): Promise<string | null> {
+  if (!institutionLogoPath) return null;
+  try {
+    const exists = await getStorageProvider().exists(institutionLogoPath);
+    return exists ? "/api/branding/logo" : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getPublicBrandingSettings(): Promise<PublicBrandingSettings> {
   try {
     const settings = await getAppSettings();
-    return toPublicBranding(settings);
+    const branding = toPublicBranding(settings);
+    branding.logoUrl = await resolveLogoPublicUrl(settings.institutionLogoPath);
+    return branding;
   } catch (error) {
     console.error("[PlacementIQ] Branding settings unavailable, using defaults:", error);
     return getDefaultPublicBrandingSettings();
