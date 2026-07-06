@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: placementiq
+      POSTGRES_PASSWORD: placementiq
+      POSTGRES_DB: placementiq
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U placementiq -d placementiq"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      args:
+        DATABASE_PROVIDER: postgresql
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      DATABASE_PROVIDER: postgresql
+      DATABASE_URL: postgresql://placementiq:placementiq@db:5432/placementiq?schema=public
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-use-32-plus-char-secret-in-production}
+      APP_URL: http://localhost:3000
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      LOCAL_UPLOAD_DIR: uploads
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((r)=>r.ok?process.exit(0):process.exit(1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+volumes:
+  pgdata:
+  uploads:

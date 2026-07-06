@@ -1,0 +1,1060 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // ── Local dev / demo (default) ──────────────────────────────────────────
+  // provider = "sqlite"
+  // DATABASE_URL="file:./dev.db"
+  // Commands: npx prisma generate && npx prisma db push && npm run db:seed
+  //
+  // ── Production / Docker trial (PostgreSQL) ──────────────────────────────
+  // 1. Change provider below to "postgresql"
+  // 2. Set DATABASE_URL to your Postgres connection string
+  // 3. First deploy: npx prisma migrate dev --name init  (commit migrations/)
+  // 4. Production:    npx prisma migrate deploy
+  // See docs/PRODUCTION_DEPLOYMENT_TRIAL.md and prisma/MIGRATIONS.md
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  TPO_ADMIN
+  FACULTY
+  HR
+}
+
+enum PlacementStatus {
+  NOT_STARTED
+  IN_TRAINING
+  READY
+  SHORTLISTED
+  PLACED
+  NEEDS_ATTENTION
+}
+
+enum ResumeStatus {
+  NOT_UPLOADED
+  UPLOADED
+  REVIEWED
+  APPROVED
+}
+
+enum ResumeReviewStatus {
+  NOT_UPLOADED
+  UPLOADED
+  UNDER_REVIEW
+  REVIEWED
+  NEEDS_IMPROVEMENT
+  APPROVED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  hrCompanyAccess       HRCompanyAccess[]
+  sharesCreated         SharedStudentProfile[] @relation("SharesCreated")
+  sharesReceived        SharedStudentProfile[] @relation("SharesReceived")
+  passportsGenerated    PlacementPassportSnapshot[] @relation("PassportsGenerated")
+  placementDrivesCreated PlacementDrive[] @relation("DrivesCreated")
+  jobsCreated           Job[]            @relation("JobsCreated")
+  settingsUpdated       AppSettings[]    @relation("SettingsUpdatedBy")
+  jdParseLogs           JDParseLog[]
+  codingProfilesUpdated StudentCodingProfile[] @relation("CodingProfileUpdatedBy")
+  codingIntegrationsUpdated CodingPlatformIntegration[] @relation("CodingIntegrationUpdatedBy")
+
+  @@index([role])
+  @@map("users")
+}
+
+model Student {
+  id                 String          @id @default(cuid())
+  fullName           String
+  rollNumber         String          @unique
+  email              String          @unique
+  phone              String?
+  branch             String
+  section            String?
+  batch              String
+  graduationYear     Int
+  cgpa               Float?
+  activeBacklogs     Int             @default(0)
+  placementStatus    PlacementStatus @default(NOT_STARTED)
+  linkedinUrl        String?
+  githubUrl          String?
+  resumeStatus       ResumeStatus    @default(NOT_UPLOADED)
+  technicalScore     Float           @default(0)
+  communicationScore Float           @default(0)
+  readinessScore     Float           @default(0)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  resumes Resume[]
+  techSkills StudentTechSkill[]
+  roleInterests StudentRoleInterest[]
+  readinessSnapshots ReadinessSnapshot[]
+  companyMatchSnapshots CompanyMatchSnapshot[]
+  sharedProfiles        SharedStudentProfile[]
+  placementPassportSnapshots PlacementPassportSnapshot[]
+  placementStages       StudentPlacementStage[]
+  resumeInsights        ResumeInsight[]
+  githubProfile         GitHubProfile?
+  codingProfiles        StudentCodingProfile[]
+  skillEvidenceSnapshots SkillEvidenceSnapshot[]
+
+  @@index([rollNumber])
+  @@index([email])
+  @@index([branch])
+  @@index([batch])
+  @@index([branch, batch])
+  @@index([placementStatus])
+  @@index([readinessScore])
+  @@index([createdAt])
+  @@index([fullName])
+  @@map("students")
+}
+
+model Resume {
+  id                String             @id @default(cuid())
+  studentId         String
+  fileName          String
+  originalFileName  String
+  filePath          String
+  mimeType          String
+  fileSize          Int
+  uploadedByUserId  String
+  reviewedByUserId  String?
+  reviewStatus      ResumeReviewStatus @default(UPLOADED)
+  atsFriendly       Boolean            @default(false)
+  resumeScore       Float              @default(0)
+  hasLinkedIn       Boolean            @default(false)
+  hasGitHub         Boolean            @default(false)
+  hasProjects       Boolean            @default(false)
+  hasCertifications Boolean            @default(false)
+  reviewerComments  String?
+  version           Int
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  insights  ResumeInsight[]
+
+  @@index([studentId])
+  @@index([isActive])
+  @@index([studentId, isActive])
+  @@index([reviewStatus])
+  @@index([resumeScore])
+  @@index([createdAt])
+  @@map("resumes")
+}
+
+enum ResumeInsightReviewStatus {
+  GENERATED
+  REVIEWED
+  APPLIED
+  DISMISSED
+}
+
+model ResumeInsight {
+  id                        String                    @id @default(cuid())
+  resumeId                  String
+  studentId                 String
+  provider                  String
+  confidenceScore           Float
+  detectedSkillsJson        String                    @default("[]")
+  missingSectionsJson       String                    @default("[]")
+  atsIssuesJson             String                    @default("[]")
+  improvementSuggestionsJson String                   @default("[]")
+  roleSuitabilityJson       String                    @default("[]")
+  resumeTruthWarningsJson   String                    @default("[]")
+  summary                   String?
+  rawTextPreview            String?
+  linkedInDetected          Boolean                   @default(false)
+  githubDetected            Boolean                   @default(false)
+  projectsDetected          Boolean                   @default(false)
+  certificationsDetected    Boolean                   @default(false)
+  atsFriendlyEstimate       Boolean                   @default(false)
+  suggestedResumeScore        Float?
+  reviewedByUserId          String?
+  reviewStatus              ResumeInsightReviewStatus @default(GENERATED)
+  appliedToResumeReview     Boolean                   @default(false)
+  createdAt                 DateTime                  @default(now())
+  updatedAt                 DateTime                  @updatedAt
+
+  resume  Resume  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([studentId])
+  @@index([reviewStatus])
+  @@index([createdAt])
+  @@map("resume_insights")
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  actorUserId String?
+  actorRole   UserRole?
+  action      String
+  entityType  String?
+  entityId    String?
+  description String
+  createdAt   DateTime  @default(now())
+
+  @@index([actorUserId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum SkillCategory {
+  PROGRAMMING_LANGUAGE
+  WEB_TECHNOLOGY
+  DATABASE
+  FRAMEWORK
+  TOOL
+  CLOUD
+  DATA_ANALYTICS
+  AI_ML
+  CYBERSECURITY
+  SOFT_SKILL
+  OTHER
+}
+
+enum ProficiencyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum VerificationStatus {
+  SELF_DECLARED
+  FACULTY_VERIFIED
+  PERFORMANCE_VERIFIED
+  RESUME_EVIDENCE
+  GITHUB_EVIDENCE
+  NOT_VERIFIED
+}
+
+enum InterestLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RoleReadinessLevel {
+  NOT_READY
+  LEARNING
+  NEAR_READY
+  READY
+}
+
+model TechSkill {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  category  SkillCategory
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  studentSkills StudentTechSkill[]
+
+  @@index([category])
+  @@index([isActive])
+  @@map("tech_skills")
+}
+
+model StudentTechSkill {
+  id                 String             @id @default(cuid())
+  studentId          String
+  techSkillId        String
+  proficiencyLevel   ProficiencyLevel   @default(BEGINNER)
+  verificationStatus VerificationStatus @default(NOT_VERIFIED)
+  evidenceSource     String?
+  notes              String?
+  addedByUserId      String
+  verifiedByUserId   String?
+  verifiedAt         DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  student  Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  techSkill TechSkill @relation(fields: [techSkillId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, techSkillId])
+  @@index([studentId])
+  @@index([techSkillId])
+  @@index([proficiencyLevel])
+  @@index([verificationStatus])
+  @@map("student_tech_skills")
+}
+
+model StudentRoleInterest {
+  id             String             @id @default(cuid())
+  studentId      String
+  roleName       String
+  interestLevel  InterestLevel      @default(MEDIUM)
+  readinessLevel RoleReadinessLevel @default(NOT_READY)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, roleName])
+  @@index([studentId])
+  @@index([roleName])
+  @@map("student_role_interests")
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ReadinessStatus {
+  NOT_READY
+  NEEDS_IMPROVEMENT
+  NEAR_READY
+  PLACEMENT_READY
+  HIGHLY_READY
+}
+
+model ReadinessSnapshot {
+  id                    String          @id @default(cuid())
+  studentId             String
+  overallScore          Float
+  technicalReadiness    Float
+  communicationReadiness Float
+  resumeReadiness       Float
+  techStackReadiness    Float
+  profileReadiness      Float
+  academicReadiness     Float
+  riskLevel             RiskLevel
+  readinessStatus       ReadinessStatus
+  nextRecommendedAction String
+  scoreBreakdownJson    String
+  calculatedAt          DateTime        @default(now())
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([studentId, calculatedAt])
+  @@index([riskLevel])
+  @@index([readinessStatus])
+  @@index([overallScore])
+  @@index([calculatedAt])
+  @@map("readiness_snapshots")
+}
+
+enum CompanyRequirementStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum MatchStatus {
+  STRONG_FIT
+  GOOD_FIT
+  AVERAGE_FIT
+  RISK_FIT
+  NOT_FIT
+}
+
+enum EligibilityStatus {
+  ELIGIBLE
+  NOT_ELIGIBLE
+  NEEDS_REVIEW
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  name         String
+  website      String?
+  industry     String?
+  location     String?
+  contactPerson String?
+  contactEmail String?
+  contactPhone String?
+  notes        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  requirements CompanyRequirement[]
+  hrAccess     HRCompanyAccess[]
+  sharedProfiles SharedStudentProfile[]
+  placementPassports PlacementPassportSnapshot[]
+  placementDrives PlacementDrive[]
+
+  jdParseLogs JDParseLog[]
+
+  @@index([name])
+  @@index([isActive])
+  @@index([createdAt])
+  @@map("companies")
+}
+
+model CompanyRequirement {
+  id                       String                   @id @default(cuid())
+  companyId                String
+  roleTitle                String
+  jobType                  String?
+  eligibleBranchesJson     String                   @default("[]")
+  eligibleBatchesJson      String                   @default("[]")
+  graduationYear           Int?
+  minCgpa                  Float?
+  allowActiveBacklogs      Boolean                  @default(false)
+  maxActiveBacklogs        Int                      @default(0)
+  requiredSkillsJson       String                   @default("[]")
+  preferredSkillsJson      String                   @default("[]")
+  requiredRoleInterestsJson String                  @default("[]")
+  minTechnicalScore        Float                    @default(0)
+  minCommunicationScore    Float                    @default(0)
+  minResumeScore           Float                    @default(0)
+  minReadinessScore        Float                    @default(0)
+  requireResumeApproved    Boolean                  @default(false)
+  requireAtsFriendly       Boolean                  @default(false)
+  requireLinkedIn          Boolean                  @default(false)
+  requireGitHub            Boolean                  @default(false)
+  notes                    String?
+  status                   CompanyRequirementStatus @default(DRAFT)
+  createdByUserId          String?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+
+  company  Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  matches  CompanyMatchSnapshot[]
+  sharedProfiles SharedStudentProfile[]
+  placementPassports PlacementPassportSnapshot[]
+  placementDrives PlacementDrive[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([roleTitle])
+  @@index([createdAt])
+  @@map("company_requirements")
+}
+
+model JDParseLog {
+  id              String   @id @default(cuid())
+  userId          String
+  companyId       String?
+  rawTextPreview  String
+  parsedJson      String
+  confidenceScore Float?
+  provider        String
+  createdAt       DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([createdAt])
+  @@map("jd_parse_logs")
+}
+
+model CompanyMatchSnapshot {
+  id                    String            @id @default(cuid())
+  companyRequirementId  String
+  studentId             String
+  matchScore            Float
+  matchStatus           MatchStatus
+  eligibilityStatus     EligibilityStatus
+  matchedSkillsJson     String            @default("[]")
+  missingSkillsJson     String            @default("[]")
+  strengthsJson         String            @default("[]")
+  risksJson             String            @default("[]")
+  reasonsJson           String            @default("[]")
+  calculatedAt          DateTime          @default(now())
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  requirement CompanyRequirement @relation(fields: [companyRequirementId], references: [id], onDelete: Cascade)
+  student     Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([companyRequirementId, studentId])
+  @@index([companyRequirementId])
+  @@index([studentId])
+  @@index([matchStatus])
+  @@index([eligibilityStatus])
+  @@index([matchScore])
+  @@index([calculatedAt])
+  @@map("company_match_snapshots")
+}
+
+enum HRAccessRole {
+  HR_VIEWER
+  HR_RECRUITER
+  HR_MANAGER
+}
+
+enum ShareStatus {
+  SHARED
+  VIEWED
+  SHORTLISTED
+  REJECTED
+  REVOKED
+  EXPIRED
+}
+
+enum HRDecision {
+  PENDING
+  INTERESTED
+  NOT_INTERESTED
+  SHORTLISTED
+  NEEDS_MORE_INFO
+}
+
+model HRCompanyAccess {
+  id              String       @id @default(cuid())
+  userId          String
+  companyId       String
+  accessRole      HRAccessRole @default(HR_VIEWER)
+  isActive        Boolean      @default(true)
+  createdByUserId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+  @@index([isActive])
+  @@map("hr_company_access")
+}
+
+model SharedStudentProfile {
+  id                    String      @id @default(cuid())
+  companyId             String
+  companyRequirementId  String
+  studentId             String
+  sharedByUserId        String
+  sharedWithUserId      String?
+  shareStatus           ShareStatus @default(SHARED)
+  allowResumeDownload   Boolean     @default(false)
+  allowPlacementPassport Boolean    @default(false)
+  hrDecision            HRDecision  @default(PENDING)
+  hrComments            String?
+  sharingNote           String?
+  expiresAt             DateTime?
+  sharedAt              DateTime    @default(now())
+  revokedAt             DateTime?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  requirement CompanyRequirement @relation(fields: [companyRequirementId], references: [id], onDelete: Cascade)
+  student     Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sharedBy    User               @relation("SharesCreated", fields: [sharedByUserId], references: [id], onDelete: Restrict)
+  sharedWith  User?              @relation("SharesReceived", fields: [sharedWithUserId], references: [id], onDelete: SetNull)
+  placementPassports PlacementPassportSnapshot[]
+
+  @@index([companyId])
+  @@index([companyRequirementId])
+  @@index([studentId])
+  @@index([sharedByUserId])
+  @@index([sharedWithUserId])
+  @@index([shareStatus])
+  @@index([hrDecision])
+  @@index([sharedAt])
+  @@index([expiresAt])
+  @@index([companyRequirementId, hrDecision])
+  @@map("shared_student_profiles")
+}
+
+model PlacementPassportSnapshot {
+  id                     String             @id @default(cuid())
+  studentId              String
+  companyId              String?
+  companyRequirementId   String?
+  sharedStudentProfileId String?
+  generatedByUserId      String
+  passportTitle          String
+  overallReadinessScore  Float
+  readinessStatus        ReadinessStatus
+  riskLevel              RiskLevel
+  companyMatchScore      Float?
+  companyMatchStatus     MatchStatus?
+  eligibilityStatus      EligibilityStatus?
+  summaryJson            String             @default("{}")
+  skillsJson             String             @default("[]")
+  resumeJson             String             @default("{}")
+  academicJson           String             @default("{}")
+  strengthsJson          String             @default("[]")
+  risksJson              String             @default("[]")
+  recommendationsJson    String             @default("{}")
+  generatedAt            DateTime           @default(now())
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  student       Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  company       Company?               @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  requirement   CompanyRequirement?    @relation(fields: [companyRequirementId], references: [id], onDelete: SetNull)
+  sharedProfile SharedStudentProfile?  @relation(fields: [sharedStudentProfileId], references: [id], onDelete: SetNull)
+  generatedBy   User                   @relation("PassportsGenerated", fields: [generatedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([studentId])
+  @@index([companyId])
+  @@index([companyRequirementId])
+  @@index([sharedStudentProfileId])
+  @@index([generatedAt])
+  @@map("placement_passport_snapshots")
+}
+
+enum DriveMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum DriveStatus {
+  DRAFT
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum PlacementCurrentStage {
+  NOT_REGISTERED
+  REGISTERED
+  ELIGIBLE
+  SHARED_WITH_HR
+  HR_VIEWED
+  HR_INTERESTED
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  TECHNICAL_ROUND
+  HR_ROUND
+  SELECTED
+  OFFERED
+  JOINED
+  REJECTED
+  WITHDRAWN
+}
+
+enum PlacementFinalOutcome {
+  PENDING
+  SELECTED
+  REJECTED
+  OFFERED
+  JOINED
+  WITHDRAWN
+  NO_SHOW
+}
+
+enum PipelineStatus {
+  PENDING
+  PASSED
+  FAILED
+  NOT_APPLICABLE
+  NOT_ATTENDED
+}
+
+model PlacementDrive {
+  id                   String      @id @default(cuid())
+  companyId            String
+  companyRequirementId String?
+  driveTitle           String
+  driveDate            DateTime?
+  venue                String?
+  mode                 DriveMode   @default(OFFLINE)
+  status               DriveStatus @default(DRAFT)
+  notes                String?
+  createdByUserId      String
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  requirement CompanyRequirement? @relation(fields: [companyRequirementId], references: [id], onDelete: SetNull)
+  createdBy   User                @relation("DrivesCreated", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  stages      StudentPlacementStage[]
+
+  @@index([companyId])
+  @@index([companyRequirementId])
+  @@index([status])
+  @@index([driveDate])
+  @@index([createdAt])
+  @@map("placement_drives")
+}
+
+model StudentPlacementStage {
+  id                   String                @id @default(cuid())
+  placementDriveId     String
+  studentId            String
+  currentStage         PlacementCurrentStage @default(NOT_REGISTERED)
+  finalOutcome         PlacementFinalOutcome @default(PENDING)
+  registrationStatus   PipelineStatus        @default(NOT_APPLICABLE)
+  attendanceStatus     PipelineStatus        @default(PENDING)
+  technicalRoundStatus PipelineStatus        @default(PENDING)
+  hrRoundStatus        PipelineStatus        @default(PENDING)
+  offerStatus          PipelineStatus        @default(PENDING)
+  joiningStatus        PipelineStatus        @default(PENDING)
+  rejectionReason      String?
+  packageLpa           Float?
+  offerLocation        String?
+  notes                String?
+  updatedByUserId      String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  drive   PlacementDrive @relation(fields: [placementDriveId], references: [id], onDelete: Cascade)
+  student Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([placementDriveId, studentId])
+  @@index([placementDriveId])
+  @@index([studentId])
+  @@index([placementDriveId, currentStage])
+  @@index([currentStage])
+  @@index([finalOutcome])
+  @@index([attendanceStatus])
+  @@map("student_placement_stages")
+}
+
+enum GitHubSyncStatus {
+  NOT_SYNCED
+  SYNCED
+  FAILED
+  RATE_LIMITED
+}
+
+model GitHubProfile {
+  id               String           @id @default(cuid())
+  studentId        String           @unique
+  username         String
+  profileUrl       String
+  avatarUrl        String?
+  publicRepos      Int              @default(0)
+  followers        Int              @default(0)
+  following        Int              @default(0)
+  lastSyncedAt     DateTime?
+  syncStatus       GitHubSyncStatus @default(NOT_SYNCED)
+  syncError        String?
+  activityScore    Float            @default(0)
+  projectScore     Float            @default(0)
+  consistencyScore Float            @default(0)
+  evidenceScore    Float            @default(0)
+  topLanguagesJson String           @default("[]")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  student      Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  repositories GitHubRepository[]
+
+  @@index([studentId])
+  @@index([username])
+  @@index([syncStatus])
+  @@index([evidenceScore])
+  @@map("github_profiles")
+}
+
+model GitHubRepository {
+  id                  String    @id @default(cuid())
+  githubProfileId     String
+  repoName            String
+  repoUrl             String
+  description         String?
+  primaryLanguage     String?
+  languagesJson       String?
+  stars               Int       @default(0)
+  forks               Int       @default(0)
+  isFork              Boolean   @default(false)
+  hasReadme           Boolean   @default(false)
+  lastPushedAt        DateTime?
+  createdAtGithub     DateTime?
+  updatedAtGithub     DateTime?
+  commitsCount        Int?
+  projectQualityScore Float?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  profile GitHubProfile @relation(fields: [githubProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([githubProfileId, repoName])
+  @@index([githubProfileId])
+  @@index([primaryLanguage])
+  @@map("github_repositories")
+}
+
+enum CodingProfileVerificationStatus {
+  NOT_VERIFIED
+  PROFILE_LINKED
+  MANUALLY_VERIFIED
+  CSV_VERIFIED
+  PUBLIC_EVIDENCE
+  FACULTY_VERIFIED
+}
+
+enum CodingProfileDataSource {
+  MANUAL
+  CSV_IMPORT
+  PUBLIC_PROFILE
+  API
+  UNKNOWN
+}
+
+enum CodingProfileSyncStatus {
+  NOT_SYNCED
+  SYNCED
+  FAILED
+  UNSUPPORTED
+}
+
+model CodingPlatform {
+  id                     String   @id @default(cuid())
+  name                   String   @unique
+  slug                   String   @unique
+  websiteUrl             String?
+  isActive               Boolean  @default(true)
+  supportsManualTracking Boolean  @default(true)
+  supportsCsvImport      Boolean  @default(true)
+  supportsPublicProfile  Boolean  @default(false)
+  notes                  String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  profiles     StudentCodingProfile[]
+  integration  CodingPlatformIntegration?
+
+  @@map("coding_platforms")
+}
+
+enum CodingPlatformSyncMode {
+  PUBLIC_API
+  ENTERPRISE_API
+  PARTNER_API
+  CSV_ONLY
+  MANUAL_ONLY
+  UNSUPPORTED
+}
+
+enum CodingPlatformApiStatus {
+  NOT_CONFIGURED
+  CONFIGURED
+  TESTED
+  FAILED
+  RATE_LIMITED
+  DISABLED
+}
+
+enum CodingPlatformCredentialStatus {
+  NOT_REQUIRED
+  MISSING
+  CONFIGURED
+  INVALID
+}
+
+enum AccessRequestStatus {
+  NOT_REQUIRED
+  NOT_REQUESTED
+  REQUESTED
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  NOT_AVAILABLE
+}
+
+model CodingPlatformIntegration {
+  id                        String                         @id @default(cuid())
+  platformId                String                         @unique
+  syncMode                  CodingPlatformSyncMode         @default(UNSUPPORTED)
+  apiStatus                 CodingPlatformApiStatus        @default(NOT_CONFIGURED)
+  credentialStatus          CodingPlatformCredentialStatus @default(NOT_REQUIRED)
+  baseUrl                   String?
+  encryptedCredentialsJson  String?
+  testConnectionStatus      String?
+  testConnectionMessage     String?
+  lastTestedAt              DateTime?
+  lastSuccessfulSyncAt      DateTime?
+  contactPerson             String?
+  vendorContactEmail        String?
+  accessRequestStatus       AccessRequestStatus            @default(NOT_REQUIRED)
+  accessRequestNotes        String?
+  documentationUrl          String?
+  enabled                   Boolean                        @default(false)
+  createdAt                 DateTime                       @default(now())
+  updatedAt                 DateTime                       @updatedAt
+  updatedByUserId           String?
+
+  platform  CodingPlatform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  updatedBy User?          @relation("CodingIntegrationUpdatedBy", fields: [updatedByUserId], references: [id])
+
+  @@index([platformId])
+  @@index([syncMode])
+  @@index([apiStatus])
+  @@index([enabled])
+  @@map("coding_platform_integrations")
+}
+
+model StudentCodingProfile {
+  id                   String                          @id @default(cuid())
+  studentId            String
+  platformId           String
+  username             String?
+  profileUrl           String?
+  totalProblemsSolved  Int                             @default(0)
+  easySolved           Int?
+  mediumSolved         Int?
+  hardSolved           Int?
+  contestRating        Int?
+  globalRank           Int?
+  badgesJson           String                          @default("[]")
+  primaryLanguagesJson String                          @default("[]")
+  lastActivityAt       DateTime?
+  verificationStatus   CodingProfileVerificationStatus @default(NOT_VERIFIED)
+  dataSource           CodingProfileDataSource         @default(MANUAL)
+  evidenceScore        Float                           @default(0)
+  consistencyScore     Float                           @default(0)
+  problemSolvingScore  Float                           @default(0)
+  profileStrengthScore Float                           @default(0)
+  lastUpdatedByUserId  String?
+  lastSyncedAt         DateTime?
+  syncStatus           CodingProfileSyncStatus         @default(NOT_SYNCED)
+  syncError            String?
+  notes                String?
+  createdAt            DateTime                        @default(now())
+  updatedAt            DateTime                        @updatedAt
+
+  student       Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  platform      CodingPlatform @relation(fields: [platformId], references: [id], onDelete: Restrict)
+  lastUpdatedBy User?          @relation("CodingProfileUpdatedBy", fields: [lastUpdatedByUserId], references: [id])
+
+  @@unique([studentId, platformId])
+  @@index([studentId])
+  @@index([platformId])
+  @@index([verificationStatus])
+  @@index([evidenceScore])
+  @@index([dataSource])
+  @@index([syncStatus])
+  @@map("student_coding_profiles")
+}
+
+enum EvidenceStrength {
+  NONE
+  WEAK
+  MODERATE
+  STRONG
+  VERIFIED
+}
+
+model SkillEvidenceSnapshot {
+  id                        String            @id @default(cuid())
+  studentId                 String
+  skillName                 String
+  skillCategory             String?
+  techSkillId               String?
+  evidenceSourcesJson       String            @default("[]")
+  evidenceStrength          EvidenceStrength  @default(NONE)
+  confidenceScore           Float             @default(0)
+  facultyVerified           Boolean           @default(false)
+  resumeMentioned           Boolean           @default(false)
+  githubEvidence            Boolean           @default(false)
+  codingPlatformEvidence    Boolean           @default(false)
+  companyRequirementEvidence Boolean          @default(false)
+  projectEvidence           Boolean           @default(false)
+  certificationEvidence     Boolean           @default(false)
+  suggestedAction           String?
+  notes                     String?
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, skillName])
+  @@index([studentId])
+  @@index([evidenceStrength])
+  @@index([techSkillId])
+  @@map("skill_evidence_snapshots")
+}
+
+enum JobType {
+  BULK_READINESS_RECALC
+  COMPANY_MATCHING
+  STUDENT_IMPORT
+  STUDENT_EXPORT
+  REPORT_EXPORT
+  DRIVE_EXPORT
+  GITHUB_SYNC
+  SKILL_EVIDENCE_REFRESH
+  SYSTEM
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model Job {
+  id              String    @id @default(cuid())
+  jobType         JobType
+  status          JobStatus @default(QUEUED)
+  title           String
+  description     String?
+  progressCurrent Int       @default(0)
+  progressTotal   Int       @default(0)
+  progressPercent Int       @default(0)
+  resultJson      String?
+  errorMessage    String?
+  createdByUserId String
+  startedAt       DateTime?
+  completedAt     DateTime?
+  failedAt        DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  createdBy User @relation("JobsCreated", fields: [createdByUserId], references: [id])
+
+  @@index([jobType])
+  @@index([status])
+  @@index([createdByUserId])
+  @@index([createdAt])
+  @@index([jobType, status])
+  @@map("jobs")
+}
+
+model AppSettings {
+  id                         String   @id @default("default")
+  institutionName            String   @default("Your College / Organization")
+  placementCellName          String   @default("Placement Cell")
+  institutionLogoPath        String?
+  reportHeaderText           String?
+  reportFooterText           String?
+  contactEmail               String?
+  contactPhone               String?
+  website                    String?
+  address                    String?
+  defaultAcademicYear        String?
+  primaryColor               String?
+  reportSignatureName        String?
+  reportSignatureDesignation String?
+  updatedByUserId            String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  updatedBy User? @relation("SettingsUpdatedBy", fields: [updatedByUserId], references: [id])
+
+  @@map("app_settings")
+}
