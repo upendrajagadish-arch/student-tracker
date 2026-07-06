@@ -10,8 +10,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: placementiq_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d placementiq_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     env:
-      DATABASE_URL: file:./ci.db
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/placementiq_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/placementiq_test?schema=public
       SESSION_SECRET: ci-test-secret-thirty-two-characters-minimum
       STORAGE_PROVIDER: local
       NODE_ENV: test
@@ -28,7 +44,7 @@ jobs:
         run: npm ci
 
       - name: Generate Prisma client
-        run: npx prisma generate
+        run: node scripts/prisma-generate.mjs
 
       - name: Push database schema
         run: npx prisma db push

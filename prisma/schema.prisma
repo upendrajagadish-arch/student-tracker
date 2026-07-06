@@ -8,14 +8,12 @@ datasource db {
   // DATABASE_URL="file:./dev.db"
   // Commands: npx prisma generate && npx prisma db push && npm run db:seed
   //
-  // ── Production / Docker trial (PostgreSQL) ──────────────────────────────
-  // 1. Change provider below to "postgresql"
-  // 2. Set DATABASE_URL to your Postgres connection string
-  // 3. First deploy: npx prisma migrate dev --name init  (commit migrations/)
-  // 4. Production:    npx prisma migrate deploy
-  // See docs/PRODUCTION_DEPLOYMENT_TRIAL.md and prisma/MIGRATIONS.md
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  // ── Supabase / PostgreSQL (production & Supabase local dev) ─────────────
+  // Set DATABASE_URL to POSTGRES_PRISMA_URL (pooled) and DIRECT_URL to
+  // POSTGRES_URL_NON_POOLING from the Supabase dashboard.
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
