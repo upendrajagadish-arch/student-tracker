@@ -1,6 +1,7 @@
 "use client";
 
 import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
+import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -56,7 +57,7 @@ export function JobsListClient({
 
   return (
     <div className={`space-y-4 ${isPending ? "opacity-70" : ""}`}>
-      <div className="glass-panel p-4">
+      <SpotlightCard gradientBorder className="p-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div className="relative sm:col-span-2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -112,7 +113,7 @@ export function JobsListClient({
             </Button>
           </div>
         )}
-      </div>
+      </SpotlightCard>
 
       <p className="text-sm text-slate-500">
         Showing {jobs.length} of {total} jobs

@@ -1,10 +1,15 @@
 "use client";
 
 import { BrandingMark } from "@/components/branding/BrandingMark";
-import { Button } from "@/components/ui/Button";
+import {
+  AnimatedText,
+  LuxuryBackground,
+  PremiumBadge,
+  PremiumButton,
+  SpotlightCard,
+} from "@/components/premium";
 import { FormField } from "@/components/ui/FormField";
 import { GlassPanel } from "@/components/ui/premium/GlassPanel";
-import { PremiumBadge } from "@/components/ui/premium/PremiumBadge";
 import { ROLE_LOGIN_HINTS, USER_ROLE_LABELS } from "@/lib/constants";
 import { parseApiErrorMessage } from "@/lib/api-errors";
 import { loginSchema, type LoginInput } from "@/lib/validations/student";
@@ -67,23 +72,11 @@ export function LoginPageClient({ branding }: LoginPageClientProps) {
   }
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden">
-      {/* Ambient background accents */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-app-gradient"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-32 top-0 h-96 w-96 rounded-full bg-brand-500/10 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-luxury-cyan/10 blur-3xl"
-        aria-hidden
-      />
+    <div className="relative flex min-h-screen overflow-hidden bg-luxury-navy">
+      <LuxuryBackground variant="hero" className="opacity-90" />
 
       {/* Hero panel */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-luxury-mesh p-12 text-white lg:flex">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-white/5 bg-luxury-mesh p-12 text-white lg:flex">
         <div
           className="pointer-events-none absolute inset-0 bg-[length:200%_200%] opacity-30 motion-safe:animate-gradient-shift"
           style={{
@@ -92,54 +85,57 @@ export function LoginPageClient({ branding }: LoginPageClientProps) {
           }}
           aria-hidden
         />
-        <div className="relative z-10">
+        <AnimatedText className="relative z-10">
           <BrandingMark branding={branding} size="lg" showProduct variant="onDark" />
-        </div>
+        </AnimatedText>
         <div className="relative z-10 space-y-6">
           <PremiumBadge tone="gold" className="mb-2">
-            Enterprise Placement Intelligence
+            Placement Intelligence OS
           </PremiumBadge>
-          <h1 className="text-4xl font-semibold leading-tight tracking-tight">
-            Placement Intelligence
+          <AnimatedText as="h1" delay={80} className="text-4xl font-semibold leading-tight tracking-tight">
+            {branding.productName}
             <br />
             <span className="text-luxury-gold-soft">for {branding.institutionName}</span>
-          </h1>
-          <p className="max-w-md text-lg leading-relaxed text-slate-300">
+          </AnimatedText>
+          <AnimatedText as="p" delay={140} className="max-w-md text-lg leading-relaxed text-slate-300">
             {branding.reportHeaderText ??
               "Track readiness. Match talent. Share verified profiles with HR — all in one professional workspace."}
-          </p>
+          </AnimatedText>
         </div>
-        <p className="relative z-10 text-sm text-slate-400">
-          {branding.productName} · {branding.tagline}
-        </p>
+        <AnimatedText as="p" delay={200} className="relative z-10 text-sm text-slate-400">
+          {branding.placementCellName} · {branding.tagline}
+        </AnimatedText>
       </div>
 
       {/* Sign-in panel */}
-      <div className="relative flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-16">
-        <div className="mx-auto w-full max-w-md animate-slide-up space-y-8">
+      <div className="relative flex w-full flex-col justify-center bg-white/95 px-6 py-12 backdrop-blur-sm lg:w-1/2 lg:bg-white/80 lg:px-16">
+        <div className="mx-auto w-full max-w-md space-y-8">
           <div className="lg:hidden">
             <BrandingMark branding={branding} size="md" />
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-brand-600">
-              <Sparkles className="h-4 w-4" />
+            <AnimatedText className="flex items-center gap-2 text-brand-600">
+              <Sparkles className="h-4 w-4" aria-hidden />
               <span className="text-xs font-semibold uppercase tracking-widest">
                 Secure sign in
               </span>
-            </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
+            </AnimatedText>
+            <AnimatedText as="h2" delay={60} className="text-2xl font-semibold tracking-tight text-slate-900">
               Welcome back
-            </h2>
-            <p className="text-sm text-slate-500">
+            </AnimatedText>
+            <AnimatedText as="p" delay={100} className="text-sm text-slate-500">
               {branding.placementCellName} · {branding.institutionName}
-            </p>
+            </AnimatedText>
           </div>
 
-          <GlassPanel className="p-6 sm:p-8">
+          <SpotlightCard gradientBorder className="p-6 sm:p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {serverError && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-sm text-rose-800">
+                <div
+                  className="rounded-xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-sm text-rose-800"
+                  role="alert"
+                >
                   {serverError}
                 </div>
               )}
@@ -159,11 +155,11 @@ export function LoginPageClient({ branding }: LoginPageClientProps) {
                 {...register("password")}
               />
 
-              <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
+              <PremiumButton type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
                 Sign in
-              </Button>
+              </PremiumButton>
             </form>
-          </GlassPanel>
+          </SpotlightCard>
 
           <GlassPanel className="p-5">
             <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">

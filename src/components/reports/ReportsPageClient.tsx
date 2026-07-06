@@ -1,7 +1,9 @@
 "use client";
 
 import { StatCard } from "@/components/ui/StatCard";
-import { Button } from "@/components/ui/Button";
+import { PremiumButton } from "@/components/premium/PremiumButton";
+import { PremiumPageHeader } from "@/components/premium/PremiumPageHeader";
+import { AnimatedGrid } from "@/components/premium/AnimatedGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { GlassPanel } from "@/components/ui/premium/GlassPanel";
 import { PremiumTableWrapper } from "@/components/ui/premium/PremiumTableWrapper";
@@ -141,7 +143,13 @@ export function ReportsPageClient({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <PremiumPageHeader
+        eyebrow="Analytics & exports"
+        title="Reports"
+        description="Generate placement intelligence reports with Excel export and print-ready layouts."
+      />
+
+      <AnimatedGrid className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {REPORT_TYPES.map((meta) => (
           <ReportTypeCard
             key={meta.type}
@@ -150,30 +158,30 @@ export function ReportsPageClient({
             onSelect={() => updateParams({ type: meta.type })}
           />
         ))}
-      </div>
+      </AnimatedGrid>
 
       <GlassPanel className="p-4 print:hidden">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-slate-900">Filters & export</h2>
-          <div className="flex gap-2">
-            <Button
+          <div className="report-print-actions flex gap-2">
+            <PremiumButton
               variant="secondary"
               size="sm"
               onClick={refreshReport}
               isLoading={isRefreshing}
             >
               Refresh
-            </Button>
+            </PremiumButton>
             {canExport && (
-              <Button size="sm" onClick={handleExport} isLoading={isExporting}>
+              <PremiumButton size="sm" onClick={handleExport} isLoading={isExporting}>
                 <Download className="h-4 w-4" />
                 Export Excel
-              </Button>
+              </PremiumButton>
             )}
-            <Button variant="secondary" size="sm" onClick={openPrintView}>
+            <PremiumButton variant="secondary" size="sm" onClick={openPrintView}>
               <Printer className="h-4 w-4" />
               Print / Save as PDF
-            </Button>
+            </PremiumButton>
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -373,7 +381,7 @@ function ReportTypeCard({
       onClick={onSelect}
       className={`premium-hover-lift rounded-2xl border p-4 text-left transition-all duration-200 ${
         active
-          ? "border-brand-400/60 bg-gradient-to-br from-brand-50/80 to-white shadow-glow ring-1 ring-brand-400/30"
+          ? "premium-gradient-border border-brand-400/60 bg-gradient-to-br from-brand-50/80 to-white shadow-glow ring-1 ring-brand-400/30"
           : "border-surface-border/80 bg-white/90 shadow-card hover:border-brand-200/60"
       }`}
     >

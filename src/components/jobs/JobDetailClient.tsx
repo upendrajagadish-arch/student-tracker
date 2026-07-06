@@ -1,11 +1,12 @@
 "use client";
 
 import { JobStatusBadge } from "@/components/jobs/JobStatusBadge";
+import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { Button } from "@/components/ui/Button";
 import { JOB_TYPE_LABELS } from "@/lib/job-constants";
 import { formatJobDuration, getJobResultSummary } from "@/lib/job-utils";
 import { getJobMeta } from "@/lib/job-utils";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type { JobItem } from "@/types/jobs";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -53,7 +54,7 @@ export function JobDetailClient({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-surface-border bg-white p-5 shadow-card lg:col-span-2">
+        <SpotlightCard gradientBorder className="lg:col-span-2 p-5">
           <h2 className="text-sm font-semibold text-slate-900">Progress</h2>
           <div className="mt-4">
             <div className="mb-1 flex justify-between text-sm text-slate-600">
@@ -62,27 +63,29 @@ export function JobDetailClient({
                   ? `${job.progressCurrent.toLocaleString()} / ${job.progressTotal.toLocaleString()}`
                   : "No progress units"}
               </span>
-              <span>{job.progressPercent}%</span>
+              <span className="font-medium tabular-nums">{job.progressPercent}%</span>
             </div>
-            <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+            <div className="premium-progress-track">
               <div
-                className={`h-full rounded-full transition-all ${
-                  job.status === "FAILED"
-                    ? "bg-red-500"
-                    : job.status === "COMPLETED"
-                      ? "bg-emerald-500"
-                      : "bg-blue-500"
-                }`}
+                className={cn(
+                  "premium-progress-fill",
+                  job.status === "FAILED" && "premium-progress-fill--danger",
+                  job.status === "COMPLETED" && "premium-progress-fill--success"
+                )}
                 style={{ width: `${job.progressPercent}%` }}
+                role="progressbar"
+                aria-valuenow={job.progressPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
               />
             </div>
           </div>
 
           {job.status === "FAILED" && job.errorMessage && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-800">Error</p>
-              <p className="mt-1 text-sm text-red-700">{job.errorMessage}</p>
-              <p className="mt-2 text-xs text-red-600">
+            <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50/90 p-4" role="alert">
+              <p className="text-sm font-medium text-rose-800">Error</p>
+              <p className="mt-1 text-sm text-rose-700">{job.errorMessage}</p>
+              <p className="mt-2 text-xs text-rose-600">
                 Fix the underlying issue and retry the operation from the source page.
               </p>
             </div>
@@ -125,10 +128,10 @@ export function JobDetailClient({
               )}
             </div>
           )}
-        </div>
+        </SpotlightCard>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-surface-border bg-white p-5 shadow-card">
+          <SpotlightCard className="p-5">
             <h2 className="text-sm font-semibold text-slate-900">Details</h2>
             <dl className="mt-3 space-y-2 text-sm">
               <div>
@@ -162,10 +165,10 @@ export function JobDetailClient({
                 </div>
               )}
             </dl>
-          </div>
+          </SpotlightCard>
 
           {(relatedLinks.length > 0 || meta) && (
-            <div className="rounded-xl border border-surface-border bg-white p-5 shadow-card">
+            <SpotlightCard className="p-5">
               <h2 className="text-sm font-semibold text-slate-900">Related</h2>
               <ul className="mt-3 space-y-2">
                 {relatedLinks.map((link) => (
@@ -179,7 +182,7 @@ export function JobDetailClient({
                   </li>
                 ))}
               </ul>
-            </div>
+            </SpotlightCard>
           )}
         </div>
       </div>

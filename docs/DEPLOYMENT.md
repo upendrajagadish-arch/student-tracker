@@ -206,10 +206,23 @@ docker compose exec app npx tsx prisma/seed.ts
 
 ### Vercel
 
-- Use **external PostgreSQL** (Neon, Supabase, RDS)
-- Set all env vars in project settings
-- Use **S3** for resumes (local disk is ephemeral)
-- Run `prisma migrate deploy` in build step or separate CI job
+SQLite (`file:./dev.db`) **does not work** on Vercel — use **external PostgreSQL** (Neon, Supabase, Vercel Postgres, RDS).
+
+1. In `prisma/schema.prisma`, set `provider = "postgresql"` (see section 2 above).
+2. In **Vercel → Project → Settings → Environment Variables**, add for **Production**, **Preview**, and **Build**:
+   - `DATABASE_URL` — PostgreSQL connection string (required; build fails without it)
+   - `SESSION_SECRET` — 32+ character secret
+   - `STORAGE_PROVIDER=s3` plus S3 credentials (local uploads are ephemeral on Vercel)
+3. Vercel runs the `vercel-build` script (`prisma generate && next build`).
+4. **Before first deploy**, apply schema to Postgres from your machine:
+   ```bash
+   # Set provider = "postgresql" in schema.prisma, then:
+   DATABASE_URL="postgresql://..." npx prisma db push
+   DATABASE_URL="postgresql://..." npm run db:seed
+   ```
+
+**Common build error:** `Environment variable not found: DATABASE_URL` or Prisma validation at `schema.prisma:18` during `/login` — means `DATABASE_URL` is missing from Vercel **Build** environment variables, or the login page was statically prerendered (fixed via `force-dynamic` on `/login`).
+
 - `output: "standalone"` is configured for self-hosted; Vercel uses its own runtime
 
 ### Render / Railway

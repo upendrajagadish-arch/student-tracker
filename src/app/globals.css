@@ -180,6 +180,129 @@
   .page-title-gradient {
     @apply bg-gradient-to-r from-slate-900 via-slate-800 to-brand-900 bg-clip-text text-transparent;
   }
+
+  .premium-text-reveal {
+    animation: premiumTextReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .premium-page-enter {
+    animation: premiumPageEnter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .premium-animated-grid > * {
+    animation: premiumGridItem 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .premium-animated-grid > *:nth-child(1) { animation-delay: 0ms; }
+  .premium-animated-grid > *:nth-child(2) { animation-delay: 40ms; }
+  .premium-animated-grid > *:nth-child(3) { animation-delay: 80ms; }
+  .premium-animated-grid > *:nth-child(4) { animation-delay: 120ms; }
+  .premium-animated-grid > *:nth-child(5) { animation-delay: 160ms; }
+  .premium-animated-grid > *:nth-child(6) { animation-delay: 200ms; }
+  .premium-animated-grid > *:nth-child(7) { animation-delay: 240ms; }
+  .premium-animated-grid > *:nth-child(8) { animation-delay: 280ms; }
+  .premium-animated-grid > *:nth-child(9) { animation-delay: 320ms; }
+  .premium-animated-grid > *:nth-child(n + 10) { animation-delay: 360ms; }
+
+  .premium-button-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (hover: hover) {
+    .premium-button-shine::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgb(255 255 255 / 0.18) 50%,
+        transparent 60%
+      );
+      transform: translateX(-120%);
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .premium-button-shine:hover::after {
+      transform: translateX(120%);
+    }
+  }
+
+  .premium-nav-indicator {
+    @apply absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-brand-500 to-luxury-cyan opacity-0 transition-opacity duration-200;
+  }
+
+  .premium-nav-item-active .premium-nav-indicator {
+    @apply opacity-100;
+  }
+
+  .premium-progress-track {
+    @apply h-2.5 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/60;
+  }
+
+  .premium-progress-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-premium;
+    background: linear-gradient(
+      90deg,
+      rgb(37 80 227) 0%,
+      rgb(34 211 238) 50%,
+      rgb(37 80 227) 100%
+    );
+    background-size: 200% 100%;
+    animation: progressShine 3s ease infinite;
+  }
+
+  .premium-progress-fill--success {
+    @apply bg-emerald-500;
+    background-image: none;
+    animation: none;
+  }
+
+  .premium-progress-fill--danger {
+    @apply bg-rose-500;
+    background-image: none;
+    animation: none;
+  }
+}
+
+@keyframes premiumTextReveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes premiumPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes premiumGridItem {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progressShine {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
 }
 
 @layer utilities {
@@ -192,7 +315,12 @@
     .premium-hover-lift,
     .premium-nav-item,
     .premium-spotlight::after,
-    .premium-gradient-border::before {
+    .premium-gradient-border::before,
+    .premium-text-reveal,
+    .premium-page-enter,
+    .premium-animated-grid > *,
+    .premium-button-shine::after,
+    .premium-progress-fill {
       transition: none !important;
       animation: none !important;
     }
@@ -293,7 +421,11 @@ body.report-print-page main {
 
   .premium-hover-lift,
   .premium-spotlight::after,
-  .premium-gradient-border::before {
+  .premium-gradient-border::before,
+  .premium-page-enter,
+  .premium-text-reveal,
+  .premium-animated-grid > * {
     display: none !important;
+    animation: none !important;
   }
 }

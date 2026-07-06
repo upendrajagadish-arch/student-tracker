@@ -2,11 +2,11 @@
 
 import { MatchStatusBadge } from "@/components/companies/MatchBadges";
 import { HRDecisionBadge } from "@/components/sharing/SharingBadges";
+import { PremiumPageHeader } from "@/components/premium/PremiumPageHeader";
+import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
-import { GlassPanel } from "@/components/ui/premium/GlassPanel";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { PremiumTableWrapper } from "@/components/ui/premium/PremiumTableWrapper";
 import { HR_DECISION_OPTIONS } from "@/lib/sharing-constants";
 import { formatScore } from "@/lib/utils";
@@ -38,13 +38,13 @@ export function HrTalentRoomClient({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PremiumPageHeader
         eyebrow="HR workspace"
         title="Talent Room"
         description="Candidates shared with you by the placement office — verified evidence and readiness at a glance."
       />
 
-      <GlassPanel className="flex flex-wrap gap-3 p-4">
+      <SpotlightCard gradientBorder className="flex flex-wrap gap-3 p-4">
         <input
           type="text"
           placeholder="Search candidates..."
@@ -78,7 +78,7 @@ export function HrTalentRoomClient({
             </option>
           ))}
         </Select>
-      </GlassPanel>
+      </SpotlightCard>
 
       {result.data.length === 0 ? (
         <EmptyState

@@ -1,11 +1,12 @@
 "use client";
 
-import { RequirementStatusBadge } from "@/components/companies/MatchBadges";
+import { AnimatedGrid } from "@/components/premium/AnimatedGrid";
+import { PremiumBadge } from "@/components/premium/PremiumBadge";
+import { PremiumButton } from "@/components/premium/PremiumButton";
+import { PremiumPageHeader } from "@/components/premium/PremiumPageHeader";
+import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { PremiumBadge } from "@/components/ui/premium/PremiumBadge";
-import { Card, CardContent } from "@/components/ui/Card";
 import type { PaginatedResult } from "@/types";
 import type { CompanyListItem } from "@/types/company";
 import { Building2, Plus, Search, Sparkles } from "lucide-react";
@@ -38,23 +39,23 @@ export function CompaniesPageClient({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PremiumPageHeader
         title="Companies"
         description="Manage recruiting partners and role requirements."
         actions={
           canManage ? (
             <div className="flex flex-wrap gap-2">
               <Link href={`${basePath}/parse-jd`}>
-                <Button variant="secondary">
+                <PremiumButton variant="secondary">
                   <Sparkles className="h-4 w-4" />
                   Parse JD
-                </Button>
+                </PremiumButton>
               </Link>
               <Link href={`${basePath}/new`}>
-                <Button>
+                <PremiumButton>
                   <Plus className="h-4 w-4" />
                   Add Company
-                </Button>
+                </PremiumButton>
               </Link>
             </div>
           ) : undefined
@@ -96,11 +97,10 @@ export function CompaniesPageClient({
           }
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <AnimatedGrid className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {result.data.map((company) => (
             <Link key={company.id} href={`${basePath}/${company.id}`}>
-              <Card className="premium-hover-lift h-full transition-all duration-300 hover:border-brand-200/40">
-                <CardContent className="p-5">
+              <SpotlightCard gradientBorder hoverLift className="h-full p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="font-semibold text-slate-900">
@@ -119,11 +119,10 @@ export function CompaniesPageClient({
                     <span>{company.requirementCount} requirements</span>
                     <span>{company.activeRequirementCount} active</span>
                   </div>
-                </CardContent>
-              </Card>
+              </SpotlightCard>
             </Link>
           ))}
-        </div>
+        </AnimatedGrid>
       )}
 
       {result.totalPages > 1 && (

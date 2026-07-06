@@ -56,10 +56,11 @@ export function AppSidebar({
               href={item.href}
               onClick={onMobileClose}
               className={cn(
-                "premium-nav-item",
+                "premium-nav-item relative",
                 isActive && "premium-nav-item-active"
               )}
             >
+              <span className="premium-nav-indicator" aria-hidden />
               <Icon
                 className={cn(
                   "h-4 w-4 shrink-0",
@@ -97,7 +98,7 @@ export function AppSidebar({
 
   return (
     <>
-      <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200/60 bg-white/80 shadow-card backdrop-blur-xl lg:flex">
+      <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200/60 bg-gradient-to-b from-white via-white to-slate-50/80 shadow-card backdrop-blur-xl lg:flex">
         {sidebarContent}
       </aside>
 

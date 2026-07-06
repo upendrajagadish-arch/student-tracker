@@ -3,11 +3,11 @@ import { JOB_STATUS_LABELS } from "@/lib/job-constants";
 import type { JobStatus } from "@/types/jobs";
 
 const STATUS_STYLES: Record<JobStatus, string> = {
-  QUEUED: "bg-slate-100 text-slate-700",
-  RUNNING: "bg-blue-100 text-blue-800",
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  FAILED: "bg-red-100 text-red-800",
-  CANCELLED: "bg-amber-100 text-amber-800",
+  QUEUED: "bg-slate-100 text-slate-700 ring-slate-200/70",
+  RUNNING: "bg-brand-50 text-brand-800 ring-brand-200/60",
+  COMPLETED: "bg-emerald-50 text-emerald-800 ring-emerald-200/60",
+  FAILED: "bg-rose-50 text-rose-800 ring-rose-200/60",
+  CANCELLED: "bg-amber-50 text-amber-800 ring-amber-200/60",
 };
 
 export function JobStatusBadge({
@@ -20,7 +20,7 @@ export function JobStatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
         STATUS_STYLES[status],
         className
       )}

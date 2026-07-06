@@ -11,7 +11,10 @@ import {
 } from "@/components/tech-stack/TechStackCard";
 import { PlacementReadinessCard } from "@/components/readiness/PlacementReadinessCard";
 import { CompanyFitCard } from "@/components/companies/CompanyFitCard";
-import { SpotlightCard } from "@/components/ui/premium/SpotlightCard";
+import { AnimatedGrid } from "@/components/premium/AnimatedGrid";
+import { PremiumBadge } from "@/components/premium/PremiumBadge";
+import { PremiumCard } from "@/components/premium/PremiumCard";
+import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   Card,
@@ -121,7 +124,7 @@ export function StudentDetailView({
 }: StudentDetailViewProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 lg:grid-cols-3">
+      <AnimatedGrid className="grid gap-6 lg:grid-cols-3">
         <SpotlightCard hoverLift gradientBorder className="lg:col-span-2">
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
@@ -193,7 +196,7 @@ export function StudentDetailView({
             )}
           </CardContent>
         </SpotlightCard>
-      </div>
+      </AnimatedGrid>
 
       <PlacementReadinessCard
         studentId={student.id}
@@ -201,6 +204,7 @@ export function StudentDetailView({
         canRecalculate={canRecalculateReadiness}
       />
 
+      <AnimatedGrid className="space-y-6" disableStagger>
       {companiesBasePath && (
         <CompanyFitCard
           matches={companyMatches}
@@ -280,7 +284,7 @@ export function StudentDetailView({
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card>
+        <PremiumCard hoverLift className="p-0">
           <CardHeader>
             <CardTitle>Profile Links</CardTitle>
           </CardHeader>
@@ -296,19 +300,23 @@ export function StudentDetailView({
               url={student.githubUrl}
             />
           </CardContent>
-        </Card>
+        </PremiumCard>
 
-        <Card>
+        <PremiumCard hoverLift className="p-0">
           <CardHeader>
             <CardTitle>Placement Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-600">
+            <PremiumBadge tone="info" className="mb-2">
               {PLACEMENT_STATUS_LABELS[student.placementStatus]}
+            </PremiumBadge>
+            <p className="text-sm text-slate-600">
+              Current placement pipeline status for this student.
             </p>
           </CardContent>
-        </Card>
+        </PremiumCard>
       </div>
+      </AnimatedGrid>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Topbar } from "@/components/layout/Topbar";
+import { PremiumShell } from "@/components/premium/PremiumShell";
 import { ToastProvider } from "@/components/ui/Toast";
 import type { PublicBrandingSettings } from "@/types/branding";
 import type { SessionUser } from "@/types";
@@ -50,7 +51,9 @@ export function DashboardLayout({
               onMenuClick={() => setMobileOpen(true)}
             />
           </div>
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 lg:pb-10">{children}</main>
+          <main className="relative flex-1 p-4 sm:p-6 lg:p-8 lg:pb-10">
+            <PremiumShell>{children}</PremiumShell>
+          </main>
         </div>
       </div>
     </ToastProvider>

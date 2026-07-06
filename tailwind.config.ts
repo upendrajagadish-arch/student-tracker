@@ -46,6 +46,8 @@ const config: Config = {
           "0 8px 24px -4px rgb(15 23 42 / 0.08), 0 4px 8px -4px rgb(15 23 42 / 0.04)",
         premium:
           "0 0 0 1px rgb(226 232 240 / 0.8), 0 12px 32px -8px rgb(15 23 42 / 0.12)",
+        "premium-lg":
+          "0 0 0 1px rgb(37 80 227 / 0.1), 0 20px 48px -12px rgb(15 23 42 / 0.16)",
         glow: "0 0 0 1px rgb(37 80 227 / 0.08), 0 8px 32px -8px rgb(37 80 227 / 0.2)",
         "inner-soft": "inset 0 1px 0 0 rgb(255 255 255 / 0.6)",
       },
@@ -68,6 +70,9 @@ const config: Config = {
         "slide-up": "slideUp 0.45s ease-out",
         shimmer: "shimmer 2s linear infinite",
         "gradient-shift": "gradientShift 8s ease infinite",
+        "pulse-slow": "pulseSlow 6s ease-in-out infinite",
+        float: "float 8s ease-in-out infinite",
+        "grid-drift": "gridDrift 24s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -85,6 +90,18 @@ const config: Config = {
         gradientShift: {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
+        },
+        pulseSlow: {
+          "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.05)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translate(-50%, 0)" },
+          "50%": { transform: "translate(-50%, -12px)" },
+        },
+        gridDrift: {
+          "0%": { transform: "translate(0, 0)" },
+          "100%": { transform: "translate(48px, 48px)" },
         },
       },
       transitionTimingFunction: {

@@ -1,7 +1,10 @@
 "use client";
 
+import { AnimatedGrid } from "@/components/premium/AnimatedGrid";
+import { PremiumSection } from "@/components/premium/PremiumSection";
+import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { PremiumBadge } from "@/components/premium/PremiumBadge";
 import { SKILL_CATEGORY_LABELS } from "@/lib/tech-constants";
 import { READINESS_STATUS_LABELS, RISK_LEVEL_LABELS } from "@/lib/readiness-constants";
 import { formatScore } from "@/lib/utils";
@@ -35,20 +38,23 @@ export function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
   const studentsWithStrongEvidence = stats.studentsWithStrongEvidence ?? 0;
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard title="Total Students" value={stats.totalStudents} icon={Users} />
+    <div className="space-y-8">
+      <PremiumSection title="Key metrics" description="Live placement intelligence across your cohort">
+        <AnimatedGrid className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard title="Total Students" value={stats.totalStudents} icon={Users} accent="brand" />
         <StatCard
           title="Placement Ready"
           value={stats.readinessPlacementReady}
           subtitle="Readiness engine: ready or highly ready"
           icon={Target}
+          accent="emerald"
         />
         <StatCard
           title="High Risk Students"
           value={stats.readinessHighRisk}
           subtitle="High or critical risk level"
           icon={AlertTriangle}
+          accent="rose"
         />
         <StatCard
           title="Needs Attention"
@@ -99,16 +105,14 @@ export function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
           value={formatScore(stats.avgCommunicationScore)}
           icon={MessageSquare}
         />
-      </div>
+        </AnimatedGrid>
+      </PremiumSection>
 
       {(stats.activeCompanyRequirements > 0 ||
         stats.strongMatchesThisMonth > 0 ||
         stats.topMissingSkillsAcrossRequirements.length > 0) && (
-        <Card className="premium-hover-lift">
-          <CardHeader>
-            <CardTitle className="text-sm">Company Matching</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <PremiumSection title="Company Matching">
+        <SpotlightCard gradientBorder className="p-6">
             <div className="grid gap-4 sm:grid-cols-3">
               <StatCard
                 title="Active Requirements"
@@ -146,17 +150,14 @@ export function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </SpotlightCard>
+        </PremiumSection>
       )}
 
       {(stats.studentsWithGitHubSynced > 0 ||
         stats.topGitHubLanguages.length > 0) && (
-        <Card className="premium-hover-lift">
-          <CardHeader>
-            <CardTitle className="text-sm">GitHub Evidence</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <PremiumSection title="GitHub Evidence">
+        <SpotlightCard gradientBorder className="p-6">
             <div className="grid gap-4 sm:grid-cols-3">
               <StatCard
                 title="GitHub Synced"
@@ -201,27 +202,21 @@ export function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {stats.recentlyActiveGitHubStudents.map((s) => (
-                    <span
-                      key={s.rollNumber}
-                      className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700"
-                    >
+                    <PremiumBadge key={s.rollNumber} tone="neutral">
                       {s.fullName} ({s.rollNumber})
-                    </span>
+                    </PremiumBadge>
                   ))}
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </SpotlightCard>
+        </PremiumSection>
       )}
 
       {(stats.studentsWithCodingProfiles > 0 ||
         stats.topCodingPlatforms.length > 0) && (
-        <Card className="premium-hover-lift">
-          <CardHeader>
-            <CardTitle className="text-sm">Coding Platform Evidence</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <PremiumSection title="Coding Platform Evidence">
+        <SpotlightCard gradientBorder className="p-6">
             <div className="grid gap-4 sm:grid-cols-3">
               <StatCard
                 title="Coding Profiles"
@@ -264,18 +259,15 @@ export function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </SpotlightCard>
+        </PremiumSection>
       )}
 
       {(studentsWithStrongEvidence > 0 ||
         topWeaklyEvidencedSkills.length > 0 ||
         topVerifiedEvidenceSkills.length > 0) && (
-        <Card className="premium-hover-lift">
-          <CardHeader>
-            <CardTitle className="text-sm">Skill Evidence Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <PremiumSection title="Skill Evidence Overview">
+        <SpotlightCard gradientBorder className="p-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <StatCard
                 title="Strong Evidence"
@@ -325,137 +317,119 @@ export function DashboardStatsGrid({ stats }: DashboardStatsGridProps) {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </SpotlightCard>
+        </PremiumSection>
       )}
 
       {(stats.readinessStatusDistribution.length > 0 ||
         stats.readinessRiskDistribution.length > 0 ||
         stats.readinessTopGaps.length > 0 ||
         stats.topSkills.length > 0) && (
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <PremiumSection title="Placement outcomes & analytics">
+        <AnimatedGrid className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
           {stats.readinessStatusDistribution.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Readiness Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {stats.readinessStatusDistribution.map((item) => (
-                    <div
-                      key={item.status}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="text-slate-600">
-                        {READINESS_STATUS_LABELS[item.status as ReadinessStatus]}
-                      </span>
-                      <span className="font-medium text-slate-900">{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <SpotlightCard disableSpotlight className="p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">Readiness Distribution</h3>
+              <div className="space-y-2">
+                {stats.readinessStatusDistribution.map((item) => (
+                  <div
+                    key={item.status}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-slate-600">
+                      {READINESS_STATUS_LABELS[item.status as ReadinessStatus]}
+                    </span>
+                    <span className="font-medium text-slate-900">{item.count}</span>
+                  </div>
+                ))}
+              </div>
+            </SpotlightCard>
           )}
 
           {stats.readinessRiskDistribution.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Risk Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {stats.readinessRiskDistribution.map((item) => (
-                    <div
-                      key={item.risk}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="text-slate-600">
-                        {RISK_LEVEL_LABELS[item.risk as RiskLevel]}
-                      </span>
-                      <span className="font-medium text-slate-900">{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <SpotlightCard disableSpotlight className="p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">Risk Distribution</h3>
+              <div className="space-y-2">
+                {stats.readinessRiskDistribution.map((item) => (
+                  <div
+                    key={item.risk}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-slate-600">
+                      {RISK_LEVEL_LABELS[item.risk as RiskLevel]}
+                    </span>
+                    <span className="font-medium text-slate-900">{item.count}</span>
+                  </div>
+                ))}
+              </div>
+            </SpotlightCard>
           )}
 
           {stats.readinessTopGaps.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Top Readiness Gaps</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {stats.readinessTopGaps.map((item) => (
-                    <div
-                      key={item.gap}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="text-slate-600">{item.gap}</span>
-                      <span className="font-medium text-slate-900">{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <SpotlightCard disableSpotlight className="p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">Top Readiness Gaps</h3>
+              <div className="space-y-2">
+                {stats.readinessTopGaps.map((item) => (
+                  <div
+                    key={item.gap}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-slate-600">{item.gap}</span>
+                    <span className="font-medium text-slate-900">{item.count}</span>
+                  </div>
+                ))}
+              </div>
+            </SpotlightCard>
           )}
 
           {stats.topSkills.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Top 5 Skills by Student Count</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {stats.topSkills.map((skill, i) => (
-                    <div key={skill.name} className="flex items-center gap-3">
-                      <span className="w-5 text-xs font-medium text-slate-400">
-                        {i + 1}
-                      </span>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium text-slate-700">
-                            {skill.name}
-                          </span>
-                          <span className="text-slate-500">{skill.count}</span>
-                        </div>
-                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                          <div
-                            className="h-full rounded-full bg-brand-500"
-                            style={{
-                              width: `${Math.min(100, (skill.count / (stats.topSkills[0]?.count || 1)) * 100)}%`,
-                            }}
-                          />
-                        </div>
+            <SpotlightCard disableSpotlight className="p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">Top 5 Skills by Student Count</h3>
+              <div className="space-y-2">
+                {stats.topSkills.map((skill, i) => (
+                  <div key={skill.name} className="flex items-center gap-3">
+                    <span className="w-5 text-xs font-medium text-slate-400">
+                      {i + 1}
+                    </span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-slate-700">
+                          {skill.name}
+                        </span>
+                        <span className="text-slate-500">{skill.count}</span>
+                      </div>
+                      <div className="premium-progress-track mt-1 h-1.5">
+                        <div
+                          className="premium-progress-fill h-full"
+                          style={{
+                            width: `${Math.min(100, (skill.count / (stats.topSkills[0]?.count || 1)) * 100)}%`,
+                          }}
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                ))}
+              </div>
+            </SpotlightCard>
           )}
 
           {stats.categoryDistribution.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Skill Category Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {stats.categoryDistribution.slice(0, 6).map((item) => (
-                    <div key={item.category} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">
-                        {SKILL_CATEGORY_LABELS[item.category as SkillCategory]}
-                      </span>
-                      <span className="font-medium text-slate-900">{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <SpotlightCard disableSpotlight className="p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">Skill Category Distribution</h3>
+              <div className="space-y-2">
+                {stats.categoryDistribution.slice(0, 6).map((item) => (
+                  <div key={item.category} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">
+                      {SKILL_CATEGORY_LABELS[item.category as SkillCategory]}
+                    </span>
+                    <span className="font-medium text-slate-900">{item.count}</span>
+                  </div>
+                ))}
+              </div>
+            </SpotlightCard>
           )}
-        </div>
+        </AnimatedGrid>
+        </PremiumSection>
       )}
     </div>
   );
