@@ -1,3 +1,4 @@
+import { ensureDatabaseEnv } from "@/lib/database-env";
 import { z } from "zod";
 
 const storageProviderSchema = z.enum(["local", "s3"]);
@@ -93,6 +94,7 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
 let cachedEnv: ServerEnv | null = null;
 
 function parseServerEnv(): ServerEnv {
+  ensureDatabaseEnv();
   return serverEnvSchema.parse({
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_URL: process.env.DATABASE_URL,

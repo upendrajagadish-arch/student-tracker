@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:generate": "node scripts/prisma-generate.mjs",
-    "db:push": "prisma db push",
+    "db:push": "node scripts/run-prisma.mjs db push",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",

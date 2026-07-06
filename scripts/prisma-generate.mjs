@@ -1,9 +1,8 @@
-/**
- * Prisma requires DATABASE_URL to be set when the schema uses env("DATABASE_URL"),
- * even for `prisma generate` (no DB connection). This script supplies a local
- * SQLite default when the variable is missing (e.g. fresh clone, CI without .env).
- */
 import { execSync } from "node:child_process";
+import { ensureDatabaseEnv, loadEnvFiles } from "./load-env.mjs";
+
+loadEnvFiles();
+ensureDatabaseEnv();
 
 if (!process.env.DATABASE_URL?.trim()) {
   process.env.DATABASE_URL =
