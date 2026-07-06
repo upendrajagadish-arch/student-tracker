@@ -38,16 +38,16 @@ const serverEnvSchema = z
       "secret",
     ]);
 
-    if (!secret || secret.length < 32) {
-      if (isProd) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "SESSION_SECRET or AUTH_SECRET must be at least 32 characters in production",
-          path: ["SESSION_SECRET"],
-        });
-      }
-    } else if (isProd && weakSecrets.has(secret)) {
+    // Defer hard failure to getSessionSecret() at sign-in time so public pages
+    // (/, /login) can still render when SESSION_SECRET is not yet configured.
+    if (isProd && secret && secret.length < 32) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "SESSION_SECRET or AUTH_SECRET must be at least 32 characters in production",
+        path: ["SESSION_SECRET"],
+      });
+    } else if (isProd && secret && weakSecrets.has(secret)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Replace the default SESSION_SECRET before production deploy",

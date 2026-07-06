@@ -99,9 +99,34 @@ export function toPublicBranding(
   };
 }
 
+export function getDefaultPublicBrandingSettings(): PublicBrandingSettings {
+  return {
+    institutionName: DEFAULT_INSTITUTION_NAME,
+    placementCellName: DEFAULT_PLACEMENT_CELL_NAME,
+    productName: PRODUCT_NAME,
+    tagline: PRODUCT_TAGLINE,
+    logoUrl: null,
+    reportHeaderText: null,
+    reportFooterText: null,
+    contactEmail: null,
+    contactPhone: null,
+    website: null,
+    address: null,
+    defaultAcademicYear: null,
+    primaryColor: null,
+    reportSignatureName: null,
+    reportSignatureDesignation: null,
+  };
+}
+
 export async function getPublicBrandingSettings(): Promise<PublicBrandingSettings> {
-  const settings = await getAppSettings();
-  return toPublicBranding(settings);
+  try {
+    const settings = await getAppSettings();
+    return toPublicBranding(settings);
+  } catch (error) {
+    console.error("[PlacementIQ] Branding settings unavailable, using defaults:", error);
+    return getDefaultPublicBrandingSettings();
+  }
 }
 
 export async function updateAppSettings(
