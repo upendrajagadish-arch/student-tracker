@@ -206,6 +206,13 @@ docker compose exec app npx tsx prisma/seed.ts
 
 ### Vercel
 
+> **Hobby plan limit:** Vercel Hobby allows **at most 12 Serverless Functions** per deployment. PlacementIQ defines **90+ API routes** plus many dynamic pages, so it **cannot deploy on Vercel Hobby**. You will see: *"No more than 12 Serverless Functions can be added to a Deployment on the Hobby plan."*
+>
+> **Options:**
+> - **Vercel Pro** (team plan) — if you want to stay on Vercel
+> - **Recommended for solo/demo:** [Docker](#docker-compose-included) on **Railway**, **Render**, **Fly.io**, or a VPS — one container, no per-route function limit
+> - See [Render / Railway](#render--railway) below
+
 SQLite (`file:./dev.db`) **does not work** on Vercel — use **external PostgreSQL** (Neon, Supabase, Vercel Postgres, RDS).
 
 1. In `prisma/schema.prisma`, set `provider = "postgresql"` (see section 2 above).
